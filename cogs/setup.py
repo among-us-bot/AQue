@@ -40,7 +40,7 @@ class Setup(Cog):
                                                                        overwrites=matchmaking_category_permissions)
                 matchmaking_na_normal = await matchmaking_category.create_voice_channel(name="NA-Normal")
                 matchmaking_eu_normal = await matchmaking_category.create_voice_channel(name="EU-Normal")
-                matchmaking_asia_normal = await matchmaking_category.create_voice_channel(name="NA-Normal")
+                matchmaking_asia_normal = await matchmaking_category.create_voice_channel(name="ASIA-Normal")
 
                 matchmaking_channels = {
                     "na-normal": matchmaking_na_normal.id,
