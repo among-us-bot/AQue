@@ -2,6 +2,7 @@
 Created by Epic at 10/13/20
 """
 from main import Bot
+from utils import remove_cache
 
 from discord.ext.commands import Cog, command, Context, has_permissions
 from discord import PermissionOverwrite
