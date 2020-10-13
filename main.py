@@ -5,6 +5,7 @@ from config import BOT_TOKEN
 from colorformat import basicConfig
 
 from discord.ext.commands import Bot as BaseBot, MinimalHelpCommand
+from discord import Intents
 from pathlib import Path
 from logging import getLogger, DEBUG
 
@@ -34,6 +35,7 @@ class Bot(BaseBot):
                 self.logger.error("A error occured while loading a cog", exc_info=e)
 
 
+intents = Intents(guilds=True, voice_states=True, messages=True)
 if __name__ == "__main__":
-    bot = Bot("/")
+    bot = Bot("/", intents=intents)
     bot.run(BOT_TOKEN)
