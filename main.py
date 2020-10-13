@@ -32,7 +32,7 @@ class Bot(BaseBot):
                 self.load_extension(cog_name)
                 self.logger.debug(f"Loaded cog {cog_name}")
             except Exception as e:
-                self.logger.error("A error occured while loading a cog", exc_info=e)
+                self.logger.error("A error occurred while loading a cog", exc_info=e)
 
 
 intents = Intents(guilds=True, voice_states=True, messages=True)
