@@ -1,3 +1,4 @@
 *.pyc
 .idea/
 apply-env.sh
+dump.rdb
