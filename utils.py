@@ -12,11 +12,8 @@ logger = getLogger("AQue.utils")
 def get_object_id(args):
     total = 0
     for arg in args:
-        logger.debug(arg)
         if type(arg) in [Guild, User]:
             total += arg.id
-        else:
-            logger.debug("Scanning this is a bad idea?" + str(total) + str(type(arg)))
     return str(total)
 
 
@@ -41,3 +38,9 @@ def remove_cache(cache_id, args):
     cache_path = cache_id + "." + object_id
     cache = CacheElement(cache_path, expire=1)
     cache.set(None)
+
+
+def get_matchmaking_type_by_id(channel_id, config):
+    for match_type, voice_id in config.items():
+        if voice_id == channel_id:
+            return match_type
