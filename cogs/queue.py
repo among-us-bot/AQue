@@ -41,8 +41,13 @@ class Queue(Cog):
 
     async def clean_up_categories(self, guild: Guild):
         channels = guild.channels.copy()
+        category_count = 0
         for channel in channels:
             if channel.name == "In Game!" and len(channel.channels) == 0:
+                category_count += 1
+                if category_count == 1:
+                    continue
+                self.logger.debug(category_count)
                 await channel.delete(reason="[AQue] Automatically scaled categories")
 
     @Cog.listener("on_voice_state_update")
