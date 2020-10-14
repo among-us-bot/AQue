@@ -99,14 +99,17 @@ class Queue(Cog):
             return
         game_type = voice_channel.name
         async with self.locks[guild.id][game_type]:
+            voice_channel = self.bot.get_channel(voice_channel.id)  # Refresh it
             if len(voice_channel.members) < self.lobby_users:
                 return
-            await voice_channel.edit(category=await self.get_game_category(guild), name="Use /code <code>",
-                                     reason="[AQue] Lobby found.")
-            try:
-                del self.lobby_channels[guild.id][game_type]
-            except KeyError:
-                pass
+            category = await self.get_game_category(guild)
+            game_voice = await category.create_voice_channel(name="Use /code <code>", reason="[AQue] Lobby found")
+            members_to_move = voice_channel.members[:self.lobby_users]
+            for member in members_to_move:
+                try:
+                    await member.move_to(game_voice, reason="[AQue] Moving to lobby")
+                except:
+                    pass
 
     @Cog.listener("on_voice_state_update")
     async def delete_lobbies_on_empty(self, member: Member, before: VoiceState, after: VoiceState):
