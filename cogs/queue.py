@@ -80,7 +80,10 @@ class Queue(Cog):
             if len(voice_channel.members) < self.lobby_users:
                 return
             await voice_channel.edit(category=in_game_category, name="Use /code <code>", reason="[AQue] Lobby found.")
-            del self.lobby_channels[guild.id][game_type]
+            try:
+                del self.lobby_channels[guild.id][game_type]
+            except KeyError:
+                pass
 
     @Cog.listener("on_voice_state_update")
     async def delete_lobbies_on_empty(self, member: Member, before: VoiceState, after: VoiceState):
