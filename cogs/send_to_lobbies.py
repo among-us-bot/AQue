@@ -5,10 +5,11 @@ from main import Bot
 from .api import Api
 
 from discord.ext.commands import Cog
-from discord import VoiceState, Member
-from asyncio import Lock
+from discord import VoiceState, Member, VoiceChannel
+from asyncio import Lock, sleep
 from typing import Dict, List, Any
 from time import time
+from random import choice
 
 
 class SendToLobbies(Cog):
@@ -52,16 +53,30 @@ class SendToLobbies(Cog):
                 lobby_category = guild.get_channel(guild_config["categories"]["lobby"])
                 for i in range(self.target_lobbies):
                     code = "code-here"
-                    channel = await lobby_category.create_voice_channel(name=matchmaking_type + "-" + code)
+                    channel = await lobby_category.create_voice_channel(name="Use /code <code>")
                     lobby_data = {
                         "code": code,
-                        "channel_id": channel,
+                        "channel_id": channel.id,
                         "lobby_create_time": time(),
-                        "game_create_time": time()
+                        "game_create_time": time(),
+                        "game_size": self.target_users,
+                        "has_set_code": False
                     }
                     game_queues.append(lobby_data)
                 guild_queues[matchmaking_type] = game_queues
                 self.queues[guild.id] = guild_queues
+
+            for lobby in game_queues:
+                lobby_channel: VoiceChannel = self.bot.get_channel(lobby["channel_id"])
+                if len(lobby_channel.members) > len(lobby["game_size"]):
+                    continue
+                await member.move_to(lobby_channel, reason="Queue")
+                return
+
+            try:
+                await member.send("We are seing a ton of people queueing at the moment. Please try again later.")
+            except:
+                pass
 
 
 def setup(bot: Bot):
