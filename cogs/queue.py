@@ -6,7 +6,7 @@ from .api import Api
 from utils import get_matchmaking_type_by_id
 
 from discord.ext.commands import Cog
-from discord import VoiceState, Member
+from discord import VoiceState, Member, Guild, CategoryChannel, PermissionOverwrite
 from asyncio import Lock
 from typing import Dict
 from logging import getLogger
@@ -24,6 +24,19 @@ class Queue(Cog):
 
     def is_lobby_vc(self, channel: int, guild_id: int):
         return any([channel_id == channel for channel_id in list(self.lobby_channels[guild_id].values())])
+
+    async def get_game_category(self, guild: Guild):
+        for channel in guild.channels:
+            if channel.name != "In Game!":
+                continue
+            if channel.channels == 50:
+                continue
+            return channel
+        overrides = {
+            guild.default_role: PermissionOverwrite(view_channel=False)
+        }
+        return await guild.create_category_channel(name="In Game!", overwrites=overrides,
+                                                   reason="[AQue] Automatically scaled categories")
 
     @Cog.listener("on_voice_state_update")
     async def move_to_lobbies(self, member: Member, before: VoiceState, after: VoiceState):
@@ -70,7 +83,6 @@ class Queue(Cog):
         if guild_config is None:
             return
         lobby_category_id = guild_config["categories"]["lobby"]
-        in_game_category = self.bot.get_channel(guild_config["categories"]["in_game"])
         voice_channel = after.channel
 
         if voice_channel.category_id != lobby_category_id:
@@ -79,7 +91,8 @@ class Queue(Cog):
         async with self.locks[guild.id][game_type]:
             if len(voice_channel.members) < self.lobby_users:
                 return
-            await voice_channel.edit(category=in_game_category, name="Use /code <code>", reason="[AQue] Lobby found.")
+            await voice_channel.edit(category=await self.get_game_category(guild), name="Use /code <code>",
+                                     reason="[AQue] Lobby found.")
             try:
                 del self.lobby_channels[guild.id][game_type]
             except KeyError:
@@ -95,8 +108,7 @@ class Queue(Cog):
 
         if guild_config is None:
             return
-        in_game_category_id = guild_config["categories"]["in_game"]
-        if before.channel.category_id != in_game_category_id:
+        if before.channel.category.name != "In Game!":
             return
         if len(before.channel.members) <= self.lobby_deletion_threshold:
             await before.channel.delete(reason="[AQue] Lobby is empty.")
