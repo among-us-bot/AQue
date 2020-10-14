@@ -3,7 +3,7 @@ Created by Epic at 10/13/20
 """
 from main import Bot
 from .api import Api
-from .send_to_lobbies import SendToLobbies
+from .queue import Queue
 
 from discord.ext.commands import Cog, is_owner, command
 
@@ -24,8 +24,9 @@ class Admin(Cog):
             for channel in channels_copy:
                 if channel.category_id in [guild_config["categories"]["lobby"], guild_config["categories"]["in_game"]]:
                     await channel.delete()
-        send_to_lobbies: SendToLobbies = self.bot.get_cog("SendToLobbies")
-        send_to_lobbies.queues = {}
+        queue: Queue = self.bot.get_cog("Queue")
+        queue.locks = {}
+        queue.lobby_channels = {}
         await ctx.send("Done")
 
 
