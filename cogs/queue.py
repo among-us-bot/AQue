@@ -30,7 +30,7 @@ class Queue(Cog):
         for channel in guild.channels:
             if channel.name != "In Game!":
                 continue
-            if channel.channels == 50:
+            if len(channel.channels) == 50:
                 continue
             return channel
         overrides = {
