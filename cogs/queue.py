@@ -21,6 +21,7 @@ class Queue(Cog):
         self.game_channels = []
         self.lobby_users = 1
         self.lobby_deletion_threshold = 0
+        self.is_queue_enabled = True
 
     def is_lobby_vc(self, channel: int, guild_id: int):
         return any([channel_id == channel for channel_id in list(self.lobby_channels[guild_id].values())])
@@ -37,6 +38,12 @@ class Queue(Cog):
         }
         return await guild.create_category_channel(name="In Game!", overwrites=overrides,
                                                    reason="[AQue] Automatically scaled categories")
+
+    async def clean_up_categories(self, guild: Guild):
+        channels = guild.channels.copy()
+        for channel in channels:
+            if channel.name == "In Game!" and len(channel.channels) == 0:
+                await channel.delete(reason="[AQue] Automatically scaled categories")
 
     @Cog.listener("on_voice_state_update")
     async def move_to_lobbies(self, member: Member, before: VoiceState, after: VoiceState):
@@ -59,8 +66,11 @@ class Queue(Cog):
         if game_lock is None:
             game_lock = Lock()
             self.locks[guild.id][match_type] = game_lock
-
+        if not self.is_queue_enabled:
+            await member.move_to(None, reason="[AQue] Queue is disabled.")
+            return
         async with game_lock:
+            await self.clean_up_categories(guild)
             guild_lobbies = self.lobby_channels.get(guild.id, {})
             lobby_vc = guild_lobbies.get(match_type, None)
             if lobby_vc is None:

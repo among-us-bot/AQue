@@ -22,13 +22,20 @@ class Admin(Cog):
                 continue
             channels_copy = guild.channels.copy()
             for channel in channels_copy:
-                if channel.category_id in [guild_config["categories"]["lobby"], guild_config["categories"]["in_game"]]:
+                if channel.category_id == guild_config["categories"]["lobby"] or getattr(channel.category, "name",
+                                                                                         None) == "In Game!":
                     await channel.delete()
         queue: Queue = self.bot.get_cog("Queue")
         queue.locks = {}
         queue.lobby_channels = {}
         await ctx.send("Done")
 
+    @command()
+    @is_owner()
+    async def toggle_queue(self, ctx):
+        queue: Queue = self.bot.get_cog("Queue")
+        queue.is_queue_enabled = not queue.is_queue_enabled
+        await ctx.send("Toggled queue. Queue is currently: " + ["disabled", "enabled"][queue.is_queue_enabled])
 
 def setup(bot: Bot):
     bot.add_cog(Admin(bot))
