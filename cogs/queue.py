@@ -105,11 +105,12 @@ class Queue(Cog):
         game_type = voice_channel.name
         async with self.locks[guild.id][game_type]:
             voice_channel = self.bot.get_channel(voice_channel.id)  # Refresh it
-            if len(voice_channel.members) < self.lobby_users:
+            lobby_users = guild_config["lobby_config"].get(game_type, {}).get("lobby_size", 1)
+            if len(voice_channel.members) < lobby_users:
                 return
             category = await self.get_game_category(guild)
             game_voice = await category.create_voice_channel(name="Use /code <code>", reason="[AQue] Lobby found")
-            members_to_move = voice_channel.members[:self.lobby_users]
+            members_to_move = voice_channel.members[:lobby_users]
             for member in members_to_move:
                 try:
                     await member.move_to(game_voice, reason="[AQue] Moving to lobby")

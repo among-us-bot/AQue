@@ -84,10 +84,16 @@ class Setup(Cog):
                     "lobby": lobby_category.id,
                 }
 
+                lobby_config = {
+                    "na-normal": {},
+                    "eu-normal": {},
+                    "asia-normal": {}
+                }
                 config = {
                     "roles": roles,
                     "matchmaking_channels": matchmaking_channels,
-                    "categories": categories
+                    "categories": categories,
+                    "lobby_config": lobby_config
                 }
                 api.set_server_settings(ctx.guild, config)
                 await ctx.send("Done! Contact support if something isn't working!")
