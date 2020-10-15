@@ -41,6 +41,11 @@ class Api(Cog):
         self.server_settings_table.delete_one({"_id": guild.id})
         remove_cache("server_settings", [guild])
 
+    def update_server_settings(self, guild: Guild, changes: dict):
+        self.server_settings_table.update_one({"_id": guild.id}, {"$set": changes})
+        remove_cache("server_settings", [guild])
+
+
 
 
 def setup(bot: Bot):

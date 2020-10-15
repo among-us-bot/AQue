@@ -2,9 +2,10 @@
 Created by Epic at 10/13/20
 """
 from main import Bot
-from asyncio import Lock
+from .api import Api
 
-from discord.ext.commands import Cog, command, Context, has_permissions
+from asyncio import Lock
+from discord.ext.commands import Cog, command, Context, has_permissions, group
 from discord import PermissionOverwrite
 
 
@@ -97,6 +98,30 @@ class Config(Cog):
                 }
                 api.set_server_settings(ctx.guild, config)
                 await ctx.send("Done! Contact support if something isn't working!")
+
+    @group()
+    @has_permissions(manage_guild=True)
+    async def config(self, ctx):
+        pass
+
+    @config.command()
+    async def set_players(self, ctx: Context, gamemode: str, players: int):
+        if players <= 0:
+            return await ctx.send("You know that is just gonna end in disaster right?")
+        api: Api = self.bot.get_cog("Api")
+        guild_config: dict = api.get_server_settings(ctx.guild)
+        if guild_config is None:
+            return await ctx.send("Please set up the config first. This can be done by running the /setup command")
+        if gamemode not in guild_config["matchmaking_channels"].keys():
+            return await ctx.send("This game mode doesn't exist?")
+        current_lobby_settings = guild_config.get("lobby_settings", {})
+        game_lobby_settings = current_lobby_settings.get(gamemode, {})
+        game_lobby_settings["lobby_size"] = players
+        current_lobby_settings[gamemode] = game_lobby_settings
+        guild_config["lobby_settings"] = current_lobby_settings
+        api.update_server_settings(ctx.guild, guild_config)
+        await ctx.send("Config updated!")
+
 
 
 def setup(bot: Bot):
