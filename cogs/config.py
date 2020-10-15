@@ -7,11 +7,13 @@ from .api import Api
 from asyncio import Lock
 from discord.ext.commands import Cog, command, Context, has_permissions, group
 from discord import PermissionOverwrite
+from logging import getLogger
 
 
 class Config(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.logger = getLogger("AQue.cogs.config")
         self.setup_lock = Lock()
 
         self.not_verified_message = """
@@ -115,14 +117,41 @@ class Config(Cog):
             return await ctx.send("Please set up the config first. This can be done by running the /setup command")
         if gamemode not in guild_config["matchmaking_channels"].keys():
             return await ctx.send("This game mode doesn't exist?")
-        current_lobby_settings = guild_config.get("lobby_settings", {})
+        current_lobby_settings = guild_config.get("lobby_config", {})
         game_lobby_settings = current_lobby_settings.get(gamemode, {})
         game_lobby_settings["lobby_size"] = players
         current_lobby_settings[gamemode] = game_lobby_settings
-        guild_config["lobby_settings"] = current_lobby_settings
+        guild_config["lobby_config"] = current_lobby_settings
         api.update_server_settings(ctx.guild, guild_config)
         await ctx.send("Config updated!")
 
+    @config.command()
+    async def delete_gamemode(self, ctx: Context, gamemode: str, confirm: bool = False):
+        if confirm is False:
+            return await ctx.send(f"Are you sure you want to do this?\n"
+                                  f"Do `{ctx.prefix}config delete_gamemode {gamemode} true` to confirm")
+        gamemode = gamemode.lower()
+        api: Api = self.bot.get_cog("Api")
+        guild_config: dict = api.get_server_settings(ctx.guild)
+
+        if gamemode not in guild_config["matchmaking_channels"].keys():
+            return await ctx.send("This game mode doesn't exist?")
+        channel = self.bot.get_channel(guild_config["matchmaking_channels"].get(gamemode))
+        if channel is not None:
+            await channel.delete(reason=f"[AQue-Management] Deleted by {ctx.author}")
+        del guild_config["matchmaking_channels"][gamemode]
+        try:
+            del guild_config["lobby_config"][gamemode]
+        except KeyError:
+            pass
+
+        lobby_category = self.bot.get_channel(guild_config["categories"]["lobby"])
+        for channel in lobby_category.channels:
+            if channel.name == gamemode:
+                await channel.delete(reason="[AQue-Management] Cleaning up waiting lobbies")
+        self.logger.debug(guild_config)
+        api.update_server_settings(ctx.guild, guild_config)
+        await ctx.send("Gamemode deleted.")
 
 
 def setup(bot: Bot):
