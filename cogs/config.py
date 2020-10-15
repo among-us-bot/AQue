@@ -108,6 +108,7 @@ class Config(Cog):
     async def set_players(self, ctx: Context, gamemode: str, players: int):
         if players <= 0:
             return await ctx.send("You know that is just gonna end in disaster right?")
+        gamemode = gamemode.lower()
         api: Api = self.bot.get_cog("Api")
         guild_config: dict = api.get_server_settings(ctx.guild)
         if guild_config is None:
