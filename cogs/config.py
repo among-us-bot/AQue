@@ -8,7 +8,7 @@ from discord.ext.commands import Cog, command, Context, has_permissions
 from discord import PermissionOverwrite
 
 
-class Setup(Cog):
+class Config(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.setup_lock = Lock()
@@ -100,4 +100,4 @@ class Setup(Cog):
 
 
 def setup(bot: Bot):
-    bot.add_cog(Setup(bot))
+    bot.add_cog(Config(bot))
