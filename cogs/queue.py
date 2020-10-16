@@ -6,7 +6,7 @@ from .api import Api
 from utils import get_matchmaking_type_by_id
 
 from discord.ext.commands import Cog
-from discord import VoiceState, Member, Guild, CategoryChannel, PermissionOverwrite
+from discord import VoiceState, Member, Guild, PermissionOverwrite, HTTPException
 from asyncio import Lock
 from typing import Dict
 from logging import getLogger
@@ -114,7 +114,13 @@ class Queue(Cog):
             for member in members_to_move:
                 try:
                     await member.move_to(game_voice, reason="[AQue] Moving to lobby")
-                except:
+                    user_data = api.get_user(member)
+                    if user_data is None:
+                        continue
+                    ign = user_data.get("ign", None)
+                    if ign is not None:
+                        await member.edit(nick=ign)
+                except HTTPException:
                     pass
 
     @Cog.listener("on_voice_state_update")
@@ -129,6 +135,7 @@ class Queue(Cog):
             return
         if before.channel.category.name != "In Game!":
             return
+        await member.edit(nick=None)
         if len(before.channel.members) <= self.lobby_deletion_threshold:
             await before.channel.delete(reason="[AQue] Lobby is empty.")
 
