@@ -10,7 +10,7 @@ from discord import PermissionOverwrite
 from logging import getLogger
 
 
-class Config(Cog):
+class Management(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.logger = getLogger("AQue.cogs.config")
@@ -19,8 +19,8 @@ class Config(Cog):
         self.not_verified_message = """
         **You have not linked your Among Us username**
         In order to access matchmaking you have to link your account.
-        Simply send /link <username>
-        So something like /link Hooman
+        Simply send {prefix}link <username>
+        So something like {prefix}link Hooman
         """.replace("    ", "")
 
     @command()
@@ -65,7 +65,7 @@ class Config(Cog):
                                                                        overwrites=matchmaking_category_permissions)
                 non_linked_channel = await matchmaking_category.create_text_channel(name="Please link your account",
                                                                                     overwrites=non_linked_channel_permissions)
-                await non_linked_channel.send(self.not_verified_message)
+                await non_linked_channel.send(self.not_verified_message.format(prefix=ctx.prefix))
 
                 await matchmaking_category.create_voice_channel(name="You have been banned!",
                                                                 overwrites=banned_channel_permissions)
@@ -178,4 +178,4 @@ class Config(Cog):
 
 
 def setup(bot: Bot):
-    bot.add_cog(Config(bot))
+    bot.add_cog(Management(bot))
