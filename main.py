@@ -1,7 +1,7 @@
 """
 Created by Epic at 10/13/20
 """
-from config import BOT_TOKEN
+from config import BOT_TOKEN, DEFAULT_PREFIX
 from colorformat import basicConfig
 
 from discord.ext.commands import Bot as BaseBot, MinimalHelpCommand
@@ -37,5 +37,5 @@ class Bot(BaseBot):
 
 intents = Intents(guilds=True, voice_states=True, messages=True)
 if __name__ == "__main__":
-    bot = Bot("/", intents=intents)
+    bot = Bot(DEFAULT_PREFIX, intents=intents)
     bot.run(BOT_TOKEN)
