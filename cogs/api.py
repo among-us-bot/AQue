@@ -24,6 +24,15 @@ class Api(Cog):
     def get_user(self, user: User):
         return self.users_table.find_one({"_id": user.id})
 
+    def create_user(self, user: User, user_data: dict):
+        user_data["_id"] = user.id
+        self.users_table.insert_one(user_data)
+        remove_cache("user", [user])
+
+    def update_user(self, user: User, changes: dict):
+        self.users_table.update_one({"_id": user.id}, {"$set": changes})
+        remove_cache("user", [user])
+
     @cacheable("is_banned")
     def get_ban_status(self, user: User, server: Guild):
         return self.bans_table.find_one({"user_id": user.id, "guild_id": server.id}) is None
@@ -44,8 +53,6 @@ class Api(Cog):
     def update_server_settings(self, guild: Guild, changes: dict):
         self.server_settings_table.update_one({"_id": guild.id}, {"$set": changes})
         remove_cache("server_settings", [guild])
-
-
 
 
 def setup(bot: Bot):

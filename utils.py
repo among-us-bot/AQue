@@ -4,7 +4,7 @@ Created by Epic at 10/13/20
 from cache import CacheElement
 
 from logging import getLogger
-from discord import Guild, User
+from discord import Guild, User, Member
 
 logger = getLogger("AQue.utils")
 
@@ -12,7 +12,7 @@ logger = getLogger("AQue.utils")
 def get_object_id(args):
     total = 0
     for arg in args:
-        if type(arg) in [Guild, User]:
+        if type(arg) in [Guild, User, Member]:
             total += arg.id
     return str(total)
 
