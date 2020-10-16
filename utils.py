@@ -21,7 +21,7 @@ def cacheable(cache_id, *, expire=10 * 60):
     def outer(func):
         def inner(*args, **kwargs):
             object_id = cache_id + "." + get_object_id(args)
-            cache = CacheElement(cache_id + "." + object_id, expire=expire)
+            cache = CacheElement(object_id, expire=expire)
             cache_value = cache.get()
             if cache_value is None:
                 cache_value = func(*args, **kwargs)
