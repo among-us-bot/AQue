@@ -27,7 +27,7 @@ class Verification(Cog):
             api.create_user(ctx.author, {})
 
         if user.get("ign", None) is not None:
-            return await ctx.send(f"{ctx.author.mention}, you have already linked a account. "
+            return await ctx.send(f"{ctx.author.mention}, You have already linked a account. "
                                   f"Please contact the staff if you need it changed")
         user["ign"] = ign
         api.update_user(ctx.author, user)
