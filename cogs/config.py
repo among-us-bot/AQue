@@ -153,6 +153,29 @@ class Config(Cog):
         api.update_server_settings(ctx.guild, guild_config)
         await ctx.send("Gamemode deleted.")
 
+    @config.command()
+    async def create_gamemode(self, ctx: Context, gamemode: str):
+        gamemode_identifier = gamemode.lower()
+        api: Api = self.bot.get_cog("Api")
+        guild_config: dict = api.get_server_settings(ctx.guild)
+
+        if gamemode_identifier in guild_config["matchmaking_channels"].keys():
+            return await ctx.send("A gamemode with this name already exists?")
+
+        matchmaking_category = self.bot.get_channel(guild_config["categories"]["matchmaking"])
+        if matchmaking_category is None:
+            return await ctx.send("What the hell did you do? Contact support right now to get this resolved.")
+        configured_user_role = ctx.guild.get_role(guild_config["roles"]["configured"])
+        matchmaking_category_permissions = {
+            configured_user_role: PermissionOverwrite(read_messages=True),
+            ctx.guild.default_role: PermissionOverwrite(read_messages=False, speak=False)
+        }
+        vc = await matchmaking_category.create_voice_channel(name=gamemode, overwrites=matchmaking_category_permissions,
+                                                             reason="[Que-Management] Adding new gamemode")
+        guild_config["matchmaking_channels"][gamemode_identifier] = vc.id
+        api.update_server_settings(ctx.guild, guild_config)
+        await ctx.send("Updated!")
+
 
 def setup(bot: Bot):
     bot.add_cog(Config(bot))
