@@ -120,7 +120,7 @@ class Management(Cog):
 
         if gamemode not in guild_config["matchmaking_channels"].keys():
             return await ctx.send("This game mode doesn't exist?")
-        
+
         current_lobby_settings = guild_config.get("lobby_config", {})
         game_lobby_settings = current_lobby_settings.get(gamemode, {})
         game_lobby_settings["lobby_size"] = players
@@ -197,7 +197,7 @@ class Management(Cog):
                                   f" This can be done by running the {ctx.prefix}setup command")
         guild_config["prefix"] = prefix
         api.set_server_settings(ctx.guild, guild_config)
-        await ctx.send("Config set.")
+        await ctx.send("Prefix set.")
 
 
 def setup(bot: Bot):
