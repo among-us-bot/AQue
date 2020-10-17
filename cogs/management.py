@@ -176,6 +176,18 @@ class Management(Cog):
         api.update_server_settings(ctx.guild, guild_config)
         await ctx.send("Updated!")
 
+    @config.command()
+    async def set_prefix(self, ctx: Context, prefix: str):
+        api: Api = self.bot.get_cog("Api")
+        guild_config = api.get_server_settings(ctx.guild)
+
+        if guild_config is None:
+            return await ctx.send(f"Please set up the config first."
+                                  f" This can be done by running the {ctx.prefix}setup command")
+        guild_config["prefix"] = prefix
+        api.set_server_settings(ctx.guild, guild_config)
+        await ctx.send("Config set.")
+
 
 def setup(bot: Bot):
     bot.add_cog(Management(bot))

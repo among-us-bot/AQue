@@ -5,7 +5,7 @@ from config import BOT_TOKEN, DEFAULT_PREFIX
 from colorformat import basicConfig
 
 from discord.ext.commands import Bot as BaseBot, MinimalHelpCommand
-from discord import Intents
+from discord import Intents, Message
 from pathlib import Path
 from logging import getLogger, DEBUG
 
@@ -35,7 +35,15 @@ class Bot(BaseBot):
                 self.logger.error("A error occurred while loading a cog", exc_info=e)
 
 
+def get_prefix(_bot: Bot, message: Message):
+    api = _bot.get_cog("Api")
+    guild_config = api.get_server_settings(message.guild)
+    if guild_config is None:
+        return DEFAULT_PREFIX
+    return guild_config.get("prefix", DEFAULT_PREFIX)
+
+
 intents = Intents(guilds=True, voice_states=True, messages=True)
 if __name__ == "__main__":
-    bot = Bot(DEFAULT_PREFIX, intents=intents)
+    bot = Bot(get_prefix, intents=intents)
     bot.run(BOT_TOKEN)
