@@ -113,10 +113,14 @@ class Management(Cog):
         gamemode = gamemode.lower()
         api: Api = self.bot.get_cog("Api")
         guild_config: dict = api.get_server_settings(ctx.guild)
+
         if guild_config is None:
-            return await ctx.send("Please set up the config first. This can be done by running the /setup command")
+            return await ctx.send("Please set up the config first."
+                                  f" This can be done by running the {ctx.prefix}setup command")
+
         if gamemode not in guild_config["matchmaking_channels"].keys():
             return await ctx.send("This game mode doesn't exist?")
+        
         current_lobby_settings = guild_config.get("lobby_config", {})
         game_lobby_settings = current_lobby_settings.get(gamemode, {})
         game_lobby_settings["lobby_size"] = players
@@ -133,6 +137,10 @@ class Management(Cog):
         gamemode = gamemode.lower()
         api: Api = self.bot.get_cog("Api")
         guild_config: dict = api.get_server_settings(ctx.guild)
+
+        if guild_config is None:
+            return await ctx.send("Please set up the config first."
+                                  f" This can be done by running the {ctx.prefix}setup command")
 
         if gamemode not in guild_config["matchmaking_channels"].keys():
             return await ctx.send("This game mode doesn't exist?")
@@ -159,6 +167,9 @@ class Management(Cog):
         api: Api = self.bot.get_cog("Api")
         guild_config: dict = api.get_server_settings(ctx.guild)
 
+        if guild_config is None:
+            return await ctx.send("Please set up the config first."
+                                  f" This can be done by running the {ctx.prefix}setup command")
         if gamemode_identifier in guild_config["matchmaking_channels"].keys():
             return await ctx.send("A gamemode with this name already exists?")
 
@@ -182,7 +193,7 @@ class Management(Cog):
         guild_config = api.get_server_settings(ctx.guild)
 
         if guild_config is None:
-            return await ctx.send(f"Please set up the config first."
+            return await ctx.send("Please set up the config first."
                                   f" This can be done by running the {ctx.prefix}setup command")
         guild_config["prefix"] = prefix
         api.set_server_settings(ctx.guild, guild_config)
