@@ -3,9 +3,11 @@ Created by Epic at 10/14/20
 """
 from main import Bot
 from .api import Api
+from .analytics import Analytics
 from utils import get_matchmaking_type_by_id
 
 from discord.ext.commands import Cog
+from discord.ext.tasks import loop
 from discord import VoiceState, Member, Guild, PermissionOverwrite, HTTPException
 from asyncio import Lock
 from typing import Dict
@@ -22,6 +24,7 @@ class Queue(Cog):
         self.lobby_users = 1
         self.lobby_deletion_threshold = 0
         self.is_queue_enabled = True
+        self.in_matchmaking = 0
 
     def is_lobby_vc(self, channel: int, guild_id: int):
         return any([channel_id == channel for channel_id in list(self.lobby_channels[guild_id].values())])
@@ -56,6 +59,7 @@ class Queue(Cog):
             return
         guild = member.guild
         api: Api = self.bot.get_cog("Api")
+        analytics: Analytics = self.bot.get_cog("Analytics")
         guild_config = api.get_server_settings(guild)
 
         if guild_config is None:
@@ -63,6 +67,9 @@ class Queue(Cog):
         match_type = get_matchmaking_type_by_id(after.channel.id, guild_config["matchmaking_channels"])
         if match_type is None:
             return
+        self.in_matchmaking += 1
+        analytics.update_metric("in_matchmaking", "How many people is in the matchmaking channels",
+                                self.in_matchmaking)
         guild_locks = self.locks.get(guild.id, None)
         if guild_locks is None:
             guild_locks = {}
@@ -85,6 +92,9 @@ class Queue(Cog):
                 self.lobby_channels[guild.id] = guild_lobbies
             voice = self.bot.get_channel(lobby_vc)
             await member.move_to(voice, reason="[AQue] Assembling lobby")
+            self.in_matchmaking -= 1
+            analytics.update_metric("in_matchmaking", "How many people is in the matchmaking channels",
+                                    self.in_matchmaking)
 
     @Cog.listener("on_voice_state_update")
     async def start_games(self, member: Member, before: VoiceState, after: VoiceState):
@@ -138,9 +148,6 @@ class Queue(Cog):
         await member.edit(nick=None)
         if len(before.channel.members) <= self.lobby_deletion_threshold:
             await before.channel.delete(reason="[AQue] Lobby is empty.")
-
-    async def post_queue_stats(self, queue_game: str, guild_name: str, queue_size: int):
-        pass  # Kekw cant be assed
 
 
 def setup(bot: Bot):

@@ -36,7 +36,7 @@ class Analytics(Cog):
         return Response(body=self.format_response())
 
     def update_metric(self, name, value, description):
-        if self.metrics[name] is None:
+        if self.metrics.get(name, None) is None:
             self.metrics[name] = {
                 "type": "gauge",
                 "description": description,
