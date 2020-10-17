@@ -35,14 +35,13 @@ class Analytics(Cog):
     async def get_metrics(self, request: Request):
         return Response(body=self.format_response())
 
-    def create_metric(self, name, description, metric_type="gauge"):
-        self.metrics[name] = {
-            "type": metric_type,
-            "description": description,
-            "value": 0
-        }
-
-    def update_metric(self, name, value):
+    def update_metric(self, name, value, description):
+        if self.metrics[name] is None:
+            self.metrics[name] = {
+                "type": "gauge",
+                "description": description,
+                "value": 0
+            }
         self.metrics[name]["value"] = value
 
 
