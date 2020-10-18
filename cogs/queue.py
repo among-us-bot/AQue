@@ -2,9 +2,10 @@
 Created by Epic at 10/14/20
 """
 from main import Bot
+from utils import get_matchmaking_type_by_id
+from config import DEFAULT_LOBBY_USER_REQUIREMENT, DEFAULT_LOBBY_DELETION_THRESHOLD
 from .api import Api
 from .analytics import Analytics
-from utils import get_matchmaking_type_by_id
 
 from discord.ext.commands import Cog
 from discord.ext.tasks import loop
@@ -21,8 +22,6 @@ class Queue(Cog):
         self.locks: Dict[int, Dict[str, Lock]] = {}
         self.lobby_channels: Dict[int, Dict[str, int]] = {}
         self.game_channels = []
-        self.lobby_users = 1
-        self.lobby_deletion_threshold = 0
         self.is_queue_enabled = True
         self.in_matchmaking = 0
         self.waiting_for_game = 0
@@ -119,7 +118,8 @@ class Queue(Cog):
         game_type = voice_channel.name
         async with self.locks[guild.id][game_type]:
             voice_channel = self.bot.get_channel(voice_channel.id)  # Refresh it
-            lobby_users = guild_config["lobby_config"].get(game_type, {}).get("lobby_size", 1)
+            lobby_users = guild_config["lobby_config"].get(game_type, {}).get("lobby_size",
+                                                                              DEFAULT_LOBBY_USER_REQUIREMENT)
             if len(voice_channel.members) < lobby_users:
                 return
             category = await self.get_game_category(guild)
@@ -156,7 +156,7 @@ class Queue(Cog):
         if before.channel.category.name != "In Game!":
             return
         await member.edit(nick=None)
-        if len(before.channel.members) <= self.lobby_deletion_threshold:
+        if len(before.channel.members) <= DEFAULT_LOBBY_DELETION_THRESHOLD:
             await before.channel.delete(reason="[AQue] Lobby is empty.")
 
 
