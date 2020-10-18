@@ -25,6 +25,7 @@ class Queue(Cog):
         self.lobby_deletion_threshold = 0
         self.is_queue_enabled = True
         self.in_matchmaking = 0
+        self.waiting_for_game = 0
 
     def is_lobby_vc(self, channel: int, guild_id: int):
         return any([channel_id == channel for channel_id in list(self.lobby_channels[guild_id].values())])
@@ -95,6 +96,9 @@ class Queue(Cog):
             self.in_matchmaking -= 1
             analytics.update_metric("in_matchmaking", "How many people is in the matchmaking channels",
                                     self.in_matchmaking)
+            self.waiting_for_game += 1
+            analytics.update_metric("waiting_for_game", "How many people are waiting in the lobby channels",
+                                    self.in_matchmaking)
 
     @Cog.listener("on_voice_state_update")
     async def start_games(self, member: Member, before: VoiceState, after: VoiceState):
@@ -121,9 +125,11 @@ class Queue(Cog):
             category = await self.get_game_category(guild)
             game_voice = await category.create_voice_channel(name="Use /code <code>", reason="[AQue] Lobby found")
             members_to_move = voice_channel.members[:lobby_users]
+            moved = 0
             for member in members_to_move:
                 try:
                     await member.move_to(game_voice, reason="[AQue] Moving to lobby")
+                    moved += 1
                     user_data = api.get_user(member)
                     if user_data is None:
                         continue
@@ -132,6 +138,10 @@ class Queue(Cog):
                         await member.edit(nick=ign)
                 except HTTPException:
                     pass
+            self.waiting_for_game -= moved
+            analytics: Analytics = self.bot.get_cog("Analytics")
+            analytics.update_metric("waiting_for_game", "How many people are waiting in the lobby channels",
+                                    self.in_matchmaking)
 
     @Cog.listener("on_voice_state_update")
     async def delete_lobbies_on_empty(self, member: Member, before: VoiceState, after: VoiceState):
