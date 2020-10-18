@@ -20,6 +20,8 @@ class Verification(Cog):
         configured_role = ctx.guild.get_role(guild_config["roles"]["configured"])
         if configured_role is None:
             return await ctx.send("The server staff has disabled this. Sorry!")
+        if len(ign) > 10:
+            return await ctx.send("Among us usernames only, not random characters")
 
         user = api.get_user(ctx.author)
         if user is None:
