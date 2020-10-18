@@ -156,7 +156,8 @@ class Queue(Cog):
         if before.channel.category.name != "In Game!":
             return
         await member.edit(nick=None)
-        if len(before.channel.members) <= DEFAULT_LOBBY_DELETION_THRESHOLD:
+        lobby_deletion_threshold = guild_config.get("lobby_deletion_threshold", DEFAULT_LOBBY_DELETION_THRESHOLD)
+        if len(before.channel.members) <= lobby_deletion_threshold:
             await before.channel.delete(reason="[AQue] Lobby is empty.")
 
 
